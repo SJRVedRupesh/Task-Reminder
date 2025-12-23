@@ -1,0 +1,20 @@
+# Maven build output
+target/
+
+# VS Code
+.vscode/
+
+# Java compiled files
+*.class
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# H2 Database files (if created)
+*.mv.db
+*.trace.db
