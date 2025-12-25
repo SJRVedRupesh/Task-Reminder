@@ -13,13 +13,25 @@ const notifyCount = document.getElementById("notifyCount");
 
 // Ask permission ON USER LOAD
 document.addEventListener("DOMContentLoaded", () => {
-    if ("Notification" in window) {
-        Notification.requestPermission();
-    }
-    renderTasks();
-    updateStats();
-    startReminderCheck();
+    const tasks = window.tasks || [];
+    const notifList = document.getElementById("notifList");
+    const notifCount = document.getElementById("notifCount");
+
+    const pendingTasks = tasks.filter(t => t.status === "PENDING");
+
+    notifCount.innerText = pendingTasks.length;
+
+    pendingTasks.forEach(task => {
+        const li = document.createElement("li");
+        li.innerText = task.title;
+        notifList.appendChild(li);
+    });
+
+    document.getElementById("bell").onclick = () => {
+        document.getElementById("notifDropdown").classList.toggle("show");
+    };
 });
+
 
 // Add task
 taskForm.addEventListener("submit", e => {
@@ -131,3 +143,39 @@ function showNotification(task) {
         });
     }
 }
+function filterTasks(status) {
+    const tasks = document.querySelectorAll(".task-card");
+
+    tasks.forEach(task => {
+        const taskStatus = task.getAttribute("data-status");
+
+        if (status === "ALL" || taskStatus === status) {
+            task.style.display = "block";
+        } else {
+            task.style.display = "none";
+        }
+    });
+}
+function checkDeadlines() {
+    const now = new Date();
+
+    window.tasks.forEach(task => {
+        if (task.status === "PENDING") {
+            const due = new Date(task.dueDate);
+
+            if (due <= now && !sessionStorage.getItem(task.id)) {
+                new Notification("⏰ Task Deadline", {
+                    body: `Task "${task.title}" is due now!`
+                });
+                sessionStorage.setItem(task.id, "notified");
+            }
+        }
+    });
+}
+
+if ("Notification" in window) {
+    Notification.requestPermission();
+}
+
+setInterval(checkDeadlines, 60000);
+checkDeadlines();

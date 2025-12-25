@@ -1,95 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Student Task Reminder</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Task Reminder</title>
 
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script defer th:src="@{/js/script.js}"></script>
 </head>
 <body>
 
-<div class="dashboard">
+<div class="layout">
 
-    <!-- Sidebar -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-        <h2>📘 StudyDesk</h2>
-        <nav>
-            <a class="active">🏠 Dashboard</a>
-            <a>📝 Tasks</a>
-            <a>📜 History</a>
-        </nav>
+        <h2>StudyDesk</h2>
+        <a class="active" href="/">Dashboard</a>
+        <a href="#">Tasks</a>
+        <a href="#">History</a>
     </aside>
 
-    <!-- Main Area -->
-    <div class="main-area">
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
 
-        <!-- Top Header -->
-        <header class="topbar">
-            <div class="title">
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div>
                 <h1>Student Dashboard</h1>
                 <p>Stay focused. Stay ahead.</p>
             </div>
 
-            <div class="top-right">
-                <span class="notification" title="Notifications">🔔</span>
-                <img src="https://i.pravatar.cc/40"
-                     alt="Student profile picture"
-                     title="Profile">
+            <div class="top-icons">
+                <span id="bell">🔔</span>
+                <span id="notifCount">0</span>
+                <img src="https://i.pravatar.cc/40" alt="Profile image">
             </div>
-        </header>
+        </div>
 
-        <!-- Content -->
-        <main class="content">
+        <!-- STATS -->
+        <div class="stats">
+            <div class="card">
+                <h4>Total Tasks</h4>
+                <span th:text="${total}">0</span>
+            </div>
 
-            <!-- Stats -->
-            <section class="stats">
-                <div class="stat-card">
-                    <h3>Total Tasks</h3>
-                    <span id="totalTasks">0</span>
+            <div class="card">
+                <h4>Pending</h4>
+                <span th:text="${pending}">0</span>
+            </div>
+
+            <div class="card">
+                <h4>Completed</h4>
+                <span th:text="${completed}">0</span>
+            </div>
+        </div>
+
+        <!-- ADD NEW TASK (MOVED JUST BELOW DASHBOARD) -->
+        <div class="box">
+            <h3>Add New Task</h3>
+
+            <form th:action="@{/addTask}" method="post">
+
+                <label for="title">Task Title</label>
+                <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        placeholder="Eg: Math Assignment"
+                        required
+                >
+
+                <label for="description">Task Description</label>
+                <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Enter task details"
+                        rows="4"
+                        required
+                ></textarea>
+
+                <label for="dueDate">Due Date & Time</label>
+                <input
+                        type="datetime-local"
+                        id="dueDate"
+                        name="dueDate"
+                        required
+                >
+
+                <button type="submit">+ Add Task</button>
+            </form>
+        </div>
+
+        <!-- FILTER BUTTONS -->
+        <div class="filters">
+            <button onclick="filterTasks('ALL')">All</button>
+            <button onclick="filterTasks('PENDING')">Pending</button>
+            <button onclick="filterTasks('COMPLETED')">Completed</button>
+        </div>
+
+        <!-- TASK LIST -->
+        <div id="taskList">
+            <div th:each="task : ${tasks}"
+                 class="task-card"
+                 th:attr="data-status=${task.status}">
+
+                <h4 th:text="${task.title}">Task Title</h4>
+                <p th:text="${task.description}">Task description</p>
+
+                <small>
+                    Due:
+                    <span th:text="${#temporals.format(task.dueDate,'dd-MM-yyyy HH:mm')}"></span>
+                </small>
+
+                <div class="task-actions">
+                    <span class="badge" th:text="${task.status}"></span>
+
+                    <a th:if="${task.status == 'PENDING'}"
+                       th:href="@{'/complete/' + ${task.id}}">
+                        ✔ Complete
+                    </a>
                 </div>
-                <div class="stat-card">
-                    <h3>Pending</h3>
-                    <span id="pendingTasks">0</span>
-                </div>
-                <div class="stat-card">
-                    <h3>Completed</h3>
-                    <span id="completedTasks">0</span>
-                </div>
-            </section>
+            </div>
+        </div>
 
-            <!-- Panels -->
-            <section class="panels">
-
-                <!-- Add Task -->
-                <div class="card">
-                    <h2>Add New Task</h2>
-
-                    <form id="taskForm">
-                        <label for="title">Task Title</label>
-                        <input id="title" type="text" placeholder="Eg: Math Assignment" required>
-
-                        <label for="description">Task Description</label>
-                        <textarea id="description" placeholder="Details..."></textarea>
-
-                        <label for="date">Due Date & Time</label>
-                        <input id="date" type="datetime-local" required>
-
-                        <button type="submit">➕ Add Task</button>
-                    </form>
-                </div>
-
-                <!-- Task List -->
-                <div class="card">
-                    <h2>Your Tasks</h2>
-                    <ul id="taskList" class="task-list"></ul>
-                </div>
-
-            </section>
-        </main>
-    </div>
+    </main>
 </div>
 
-<script src="/js/app.js"></script>
+<!-- SEND TASKS TO JS -->
+<script th:inline="javascript">
+    window.tasks = /*[[${tasks}]]*/ [];
+</script>
+
 </body>
 </html>
